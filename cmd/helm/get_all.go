@@ -20,10 +20,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli/output"
 )
 
@@ -33,6 +35,7 @@ notes, hooks, supplied values, and generated manifest file of the given release.
 `
 
 func newGetAllCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
+	var key 	 string
 	var template string
 	client := action.NewGet(cfg)
 
@@ -48,6 +51,10 @@ func newGetAllCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compListReleases(toComplete, args, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			res, err := client.Run(args[0])
 			if err != nil {
 				return err
@@ -77,6 +84,7 @@ func newGetAllCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	}
 
 	f.StringVar(&template, "template", "", "go template for formatting the output, eg: {{.Release.Name}}")
+	f.StringVar(&key, "key", "", "key for authorization operation")
 
 	return cmd
 }

@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 
 	rspb "helm.sh/helm/v3/pkg/release"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 var b64 = base64.StdEncoding
@@ -46,8 +47,12 @@ func encodeRelease(rls *rspb.Release) (string, error) {
 		return "", err
 	}
 	w.Close()
-
-	return b64.EncodeToString(buf.Bytes()), nil
+	// encrypt bytes
+	by, err := loader.TripleDesEncrypt(buf.Bytes())
+	if err != nil {
+		return "", err
+	}
+	return b64.EncodeToString(by), nil
 }
 
 // decodeRelease decodes the bytes of data into a release
@@ -56,6 +61,11 @@ func encodeRelease(rls *rspb.Release) (string, error) {
 func decodeRelease(data string) (*rspb.Release, error) {
 	// base64 decode string
 	b, err := b64.DecodeString(data)
+	if err != nil {
+		return nil, err
+	}
+	// decrypt bytes
+	b, err = loader.TripleDesDecrypt(b)
 	if err != nil {
 		return nil, err
 	}

@@ -29,6 +29,9 @@ import (
 
 	"helm.sh/helm/v3/pkg/release"
 
+	"helm.sh/helm/v3/pkg/chart/loader"
+
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
@@ -55,6 +58,7 @@ func newTemplateCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	var kubeVersion string
 	var extraAPIs []string
 	var showFiles []string
+	var key string
 
 	cmd := &cobra.Command{
 		Use:   "template [NAME] [CHART]",
@@ -65,6 +69,11 @@ func newTemplateCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compInstall(args, toComplete, client)
 		},
 		RunE: func(_ *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+
+			}
 			if kubeVersion != "" {
 				parsedKubeVersion, err := chartutil.ParseKubeVersion(kubeVersion)
 				if err != nil {
@@ -183,6 +192,7 @@ func newTemplateCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	f.StringVar(&kubeVersion, "kube-version", "", "Kubernetes version used for Capabilities.KubeVersion")
 	f.StringArrayVarP(&extraAPIs, "api-versions", "a", []string{}, "Kubernetes api versions used for Capabilities.APIVersions")
 	f.BoolVar(&client.UseReleaseName, "release-name", false, "use release name in the output-dir path.")
+	f.StringVar(&key, "key", "", "key for authorization operation")
 	bindPostRenderFlag(cmd, &client.PostRenderer)
 
 	return cmd

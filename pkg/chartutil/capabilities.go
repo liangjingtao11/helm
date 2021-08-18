@@ -41,9 +41,10 @@ var (
 	// DefaultCapabilities is the default set of capabilities.
 	DefaultCapabilities = &Capabilities{
 		KubeVersion: KubeVersion{
-			Version:  fmt.Sprintf("v%s.%s.0", k8sVersionMajor, k8sVersionMinor),
-			Major:    k8sVersionMajor,
-			Minor:    k8sVersionMinor,
+			Version: fmt.Sprintf("v%s.%s.0", k8sVersionMajor, k8sVersionMinor),
+			Major:   k8sVersionMajor,
+			Minor:   k8sVersionMinor,
+
 			Platform: fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 		},
 		APIVersions: DefaultVersionSet,

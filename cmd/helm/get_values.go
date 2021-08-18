@@ -21,10 +21,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli/output"
 )
 
@@ -38,6 +40,7 @@ type valuesWriter struct {
 }
 
 func newGetValuesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
+	var key string
 	var outfmt output.Format
 	client := action.NewGetValues(cfg)
 
@@ -53,6 +56,10 @@ func newGetValuesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compListReleases(toComplete, args, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			vals, err := client.Run(args[0])
 			if err != nil {
 				return err
@@ -75,6 +82,7 @@ func newGetValuesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	}
 
 	f.BoolVarP(&client.AllValues, "all", "a", false, "dump all (computed) values")
+	f.StringVar(&key, "key", "", "key for authorization operation")
 	bindOutputFlag(cmd, &outfmt)
 
 	return cmd

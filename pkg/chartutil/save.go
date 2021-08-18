@@ -21,6 +21,7 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -29,6 +30,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 var headerBytes = []byte("+aHR0cHM6Ly95b3V0dS5iZS96OVV6MWljandyTQo=")
@@ -145,6 +147,26 @@ func Save(c *chart.Chart, outDir string) (string, error) {
 		rollback = true
 		return filename, err
 	}
+
+	twriter.Close()
+	zipper.Close()
+	f.Close()
+	// Encrypt
+	raw, err := os.Open(filename)
+	if err != nil {
+		return "", err
+	}
+	defer raw.Close()
+	origData, err := ioutil.ReadAll(raw)
+	if err != nil {
+		return "", err
+	}
+	cryptedData, err := loader.TripleDesEncrypt(origData)
+	if err != nil {
+		return "", err
+	}
+	_ = ioutil.WriteFile(filename, cryptedData, 0644)
+	
 	return filename, nil
 }
 

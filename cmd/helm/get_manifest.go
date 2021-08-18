@@ -21,10 +21,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 var getManifestHelp = `
@@ -37,6 +39,7 @@ charts, those resources will also be included in the manifest.
 
 func newGetManifestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	client := action.NewGet(cfg)
+	var key string
 
 	cmd := &cobra.Command{
 		Use:   "manifest RELEASE_NAME",
@@ -50,6 +53,10 @@ func newGetManifestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 			return compListReleases(toComplete, args, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			res, err := client.Run(args[0])
 			if err != nil {
 				return err
@@ -70,6 +77,7 @@ func newGetManifestCmd(cfg *action.Configuration, out io.Writer) *cobra.Command 
 	if err != nil {
 		log.Fatal(err)
 	}
+	cmd.Flags().StringVar(&key, "key", "", "key for authorization operation")
 
 	return cmd
 }

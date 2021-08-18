@@ -21,10 +21,12 @@ import (
 	"io"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const uninstallDesc = `
@@ -38,6 +40,7 @@ uninstalling them.
 `
 
 func newUninstallCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
+	var key string
 	client := action.NewUninstall(cfg)
 
 	cmd := &cobra.Command{
@@ -51,6 +54,9 @@ func newUninstallCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compListReleases(toComplete, args, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if !loader.CheckDeleteKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			for i := 0; i < len(args); i++ {
 
 				res, err := client.Run(args[i])
@@ -74,6 +80,7 @@ func newUninstallCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	f.BoolVar(&client.Wait, "wait", false, "if set, will wait until all the resources are deleted before returning. It will wait for as long as --timeout")
 	f.DurationVar(&client.Timeout, "timeout", 300*time.Second, "time to wait for any individual Kubernetes operation (like Jobs for hooks)")
 	f.StringVar(&client.Description, "description", "", "add a custom description")
+	f.StringVar(&key, "key", "", "key for authorization operation")
 
 	return cmd
 }
