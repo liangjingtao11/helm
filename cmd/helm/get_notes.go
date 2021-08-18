@@ -21,10 +21,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 var getNotesHelp = `
@@ -33,6 +35,7 @@ This command shows notes provided by the chart of a named release.
 
 func newGetNotesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	client := action.NewGet(cfg)
+	var key string
 
 	cmd := &cobra.Command{
 		Use:   "notes RELEASE_NAME",
@@ -46,6 +49,10 @@ func newGetNotesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compListReleases(toComplete, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			res, err := client.Run(args[0])
 			if err != nil {
 				return err
@@ -69,6 +76,8 @@ func newGetNotesCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	if err != nil {
 		log.Fatal(err)
 	}
+	
+	cmd.Flags().StringVar(&key, "key", "", "key for authorization operation")
 
 	return cmd
 }

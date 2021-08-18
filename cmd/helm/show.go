@@ -21,10 +21,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const showDesc = `
@@ -53,6 +55,7 @@ of the README file
 
 func newShowCmd(out io.Writer) *cobra.Command {
 	client := action.NewShow(action.ShowAll)
+	var key string
 
 	showCommand := &cobra.Command{
 		Use:               "show",
@@ -78,6 +81,10 @@ func newShowCmd(out io.Writer) *cobra.Command {
 		Args:              require.ExactArgs(1),
 		ValidArgsFunction: validArgsFunc,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			client.OutputFormat = action.ShowAll
 			output, err := runShow(args, client)
 			if err != nil {
@@ -95,6 +102,10 @@ func newShowCmd(out io.Writer) *cobra.Command {
 		Args:              require.ExactArgs(1),
 		ValidArgsFunction: validArgsFunc,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			client.OutputFormat = action.ShowValues
 			output, err := runShow(args, client)
 			if err != nil {
@@ -112,6 +123,10 @@ func newShowCmd(out io.Writer) *cobra.Command {
 		Args:              require.ExactArgs(1),
 		ValidArgsFunction: validArgsFunc,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}			
 			client.OutputFormat = action.ShowChart
 			output, err := runShow(args, client)
 			if err != nil {
@@ -129,6 +144,10 @@ func newShowCmd(out io.Writer) *cobra.Command {
 		Args:              require.ExactArgs(1),
 		ValidArgsFunction: validArgsFunc,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}			
 			client.OutputFormat = action.ShowReadme
 			output, err := runShow(args, client)
 			if err != nil {
@@ -144,6 +163,7 @@ func newShowCmd(out io.Writer) *cobra.Command {
 		addShowFlags(subCmd, client)
 		showCommand.AddCommand(subCmd)
 	}
+	showCommand.Flags().StringVar(&key, "key", "", "key for authorization operation")
 
 	return showCommand
 }

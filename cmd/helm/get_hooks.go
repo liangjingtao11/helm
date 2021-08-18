@@ -21,10 +21,12 @@ import (
 	"io"
 	"log"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"helm.sh/helm/v3/cmd/helm/require"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/chart/loader"
 )
 
 const getHooksHelp = `
@@ -35,6 +37,7 @@ Hooks are formatted in YAML and separated by the YAML '---\n' separator.
 
 func newGetHooksCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	client := action.NewGet(cfg)
+	var key string
 
 	cmd := &cobra.Command{
 		Use:   "hooks RELEASE_NAME",
@@ -48,6 +51,10 @@ func newGetHooksCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 			return compListReleases(toComplete, cfg)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			//CheckKey
+			if !loader.CheckKey(key) {
+				return errors.New("Unauthorized operation.")
+			}
 			res, err := client.Run(args[0])
 			if err != nil {
 				return err
@@ -70,6 +77,8 @@ func newGetHooksCmd(cfg *action.Configuration, out io.Writer) *cobra.Command {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	cmd.Flags().StringVar(&key, "key", "", "key for authorization operation")
 
 	return cmd
 }
