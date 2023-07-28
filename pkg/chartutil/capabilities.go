@@ -17,6 +17,7 @@ package chartutil
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 
 	"github.com/Masterminds/semver/v3"
@@ -40,9 +41,10 @@ var (
 	// DefaultCapabilities is the default set of capabilities.
 	DefaultCapabilities = &Capabilities{
 		KubeVersion: KubeVersion{
-			Version: fmt.Sprintf("v%s.%s.0", k8sVersionMajor, k8sVersionMinor),
-			Major:   k8sVersionMajor,
-			Minor:   k8sVersionMinor,
+			Version:  fmt.Sprintf("v%s.%s.0", k8sVersionMajor, k8sVersionMinor),
+			Major:    k8sVersionMajor,
+			Minor:    k8sVersionMinor,
+			Platform: fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
 		},
 		APIVersions: DefaultVersionSet,
 		HelmVersion: helmversion.Get(),
@@ -69,9 +71,10 @@ func (capabilities *Capabilities) Copy() *Capabilities {
 
 // KubeVersion is the Kubernetes version.
 type KubeVersion struct {
-	Version string // Kubernetes version
-	Major   string // Kubernetes major version
-	Minor   string // Kubernetes minor version
+	Version  string // Kubernetes version
+	Major    string // Kubernetes major version
+	Minor    string // Kubernetes minor version
+	Platform string // kubernetes platfrom (to be compatible with helm2)
 }
 
 // String implements fmt.Stringer
