@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/validation"
@@ -67,6 +68,7 @@ func Templates(linter *support.Linter, values map[string]interface{}, namespace 
 
 	options := chartutil.ReleaseOptions{
 		Name:      "test-release",
+		Time:      time.Now(),
 		Namespace: namespace,
 	}
 
@@ -110,8 +112,6 @@ func Templates(linter *support.Linter, values map[string]interface{}, namespace 
 		// These are v3 specific checks to make sure and warn people if their
 		// chart is not compatible with v3
 		linter.RunLinterRule(support.WarningSev, fpath, validateNoCRDHooks(data))
-		linter.RunLinterRule(support.ErrorSev, fpath, validateNoReleaseTime(data))
-
 		// We only apply the following lint rules to yaml files
 		if filepath.Ext(fileName) != ".yaml" || filepath.Ext(fileName) == ".yml" {
 			continue
@@ -277,13 +277,6 @@ func validateMetadataNameFunc(obj *K8sYamlStruct) validation.ValidateNameFunc {
 func validateNoCRDHooks(manifest []byte) error {
 	if crdHookSearch.Match(manifest) {
 		return errors.New("manifest is a crd-install hook. This hook is no longer supported in v3 and all CRDs should also exist the crds/ directory at the top level of the chart")
-	}
-	return nil
-}
-
-func validateNoReleaseTime(manifest []byte) error {
-	if releaseTimeSearch.Match(manifest) {
-		return errors.New(".Release.Time has been removed in v3, please replace with the `now` function in your templates")
 	}
 	return nil
 }

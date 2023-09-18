@@ -21,6 +21,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
@@ -125,6 +126,7 @@ func ReadValuesFile(filename string) (Values, error) {
 // for the composition of the final values struct
 type ReleaseOptions struct {
 	Name      string
+	Time      time.Time
 	Namespace string
 	Revision  int
 	IsUpgrade bool
@@ -143,6 +145,7 @@ func ToRenderValues(chrt *chart.Chart, chrtVals map[string]interface{}, options 
 		"Capabilities": caps,
 		"Release": map[string]interface{}{
 			"Name":      options.Name,
+			"Time":      options.Time,
 			"Namespace": options.Namespace,
 			"IsUpgrade": options.IsUpgrade,
 			"IsInstall": options.IsInstall,
