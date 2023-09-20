@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	helmtime "helm.sh/helm/v3/pkg/time"
 	"k8s.io/apimachinery/pkg/api/validation"
 	apipath "k8s.io/apimachinery/pkg/api/validation/path"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -68,7 +69,7 @@ func Templates(linter *support.Linter, values map[string]interface{}, namespace 
 
 	options := chartutil.ReleaseOptions{
 		Name:      "test-release",
-		Time:      time.Now(),
+		Time:      helmtime.Timestamp(time.Now()),
 		Namespace: namespace,
 	}
 

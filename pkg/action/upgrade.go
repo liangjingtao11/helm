@@ -35,6 +35,7 @@ import (
 	"helm.sh/helm/v3/pkg/release"
 	"helm.sh/helm/v3/pkg/releaseutil"
 	"helm.sh/helm/v3/pkg/storage/driver"
+	helmtime "helm.sh/helm/v3/pkg/time"
 )
 
 // Upgrade is the action for upgrading releases.
@@ -217,6 +218,7 @@ func (u *Upgrade) prepareUpgrade(name string, chart *chart.Chart, vals map[strin
 
 	options := chartutil.ReleaseOptions{
 		Name:      name,
+		Time:      helmtime.Timestamp(time.Now()),
 		Namespace: currentRelease.Namespace,
 		Revision:  revision,
 		IsUpgrade: true,

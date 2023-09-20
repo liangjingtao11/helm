@@ -21,8 +21,8 @@ import (
 	"io"
 	"io/ioutil"
 	"strings"
-	"time"
 
+	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
 
@@ -126,7 +126,7 @@ func ReadValuesFile(filename string) (Values, error) {
 // for the composition of the final values struct
 type ReleaseOptions struct {
 	Name      string
-	Time      time.Time
+	Time      *timestamp.Timestamp
 	Namespace string
 	Revision  int
 	IsUpgrade bool

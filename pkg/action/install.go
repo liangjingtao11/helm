@@ -32,6 +32,7 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/pkg/errors"
+	helmtime "helm.sh/helm/v3/pkg/time"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -243,6 +244,7 @@ func (i *Install) RunWithContext(ctx context.Context, chrt *chart.Chart, vals ma
 	isUpgrade := i.IsUpgrade && i.DryRun
 	options := chartutil.ReleaseOptions{
 		Name:      i.ReleaseName,
+		Time:      helmtime.Timestamp(time.Now()),
 		Namespace: i.Namespace,
 		Revision:  1,
 		IsInstall: !isUpgrade,

@@ -24,6 +24,8 @@ package time
 import (
 	"bytes"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 // emptyString contains an empty JSON string value to be used as output
@@ -38,6 +40,14 @@ type Time struct {
 // Now returns the current time. It is a convenience wrapper around time.Now()
 func Now() Time {
 	return Time{time.Now()}
+}
+
+// Timestamp converts a time.Time to a protobuf *timestamp.Timestamp.
+func Timestamp(t time.Time) *timestamp.Timestamp {
+	return &timestamp.Timestamp{
+		Seconds: t.Unix(),
+		Nanos:   int32(t.Nanosecond()),
+	}
 }
 
 func (t Time) MarshalJSON() ([]byte, error) {
